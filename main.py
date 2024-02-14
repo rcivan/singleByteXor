@@ -22,7 +22,7 @@ def vigenere(text: bytearray, key: bytearray) -> bytearray:
 
 def write_ctext_file(ptext: str, key: bytearray, fname: str) -> None:
     pbytes = bytearray(ptext, 'utf-8')
-    cbytes = vigenere(pbytes, key)
+    cbytes = singleByteXor(pbytes, key)
 
     with open(fname, 'wb') as f:
         f.write(cbytes)
@@ -71,14 +71,24 @@ def break_single_byte(cbytes: bytearray, eng_ranks: bytearray) -> (int, bytearra
             best = score
             best_byte = i
     return best_byte, singleByteXor(cbytes, best_byte)
+
+def break_vigenere(cbytes, eng_ranks, num_bytes=4):
+  key = bytearray()
+  for i in range(num_bytes):
+    key_part = bytearray()
+    for x in range(i, len(cbytes), num_bytes):
+      key_part.append(cbytes[x])
+    key.append(break_single_byte(key_part, eng_ranks)[0])
+  return vigenere(cbytes, key)
       
-
-
+    
 def main():
-    cbytes = read_ctext_file([0b00000000], 'breakme.bin')
-    eng_ranks = gen_english_ranks()
-    key, message = break_single_byte(cbytes, eng_ranks)
-    print(message.decode('utf-8'))
+  cbytes = read_ctext_file([0b00000000], 'breakme2.bin')
+  eng_ranks = gen_english_ranks()
+  message = break_vigenere(cbytes, eng_ranks, 4)
+  print(message.decode('utf-8'))
+
+  
 
 
 if __name__ == '__main__':
